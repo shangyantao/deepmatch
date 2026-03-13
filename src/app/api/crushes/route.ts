@@ -16,7 +16,7 @@ export async function GET() {
   try {
     // 获取我暗恋的人
     const myCrushes = await query(
-      `SELECT c.*, u.name, u.email as phone 
+      `SELECT c.*, u.name, u.phone 
        FROM crushes c
        JOIN users u ON c.target_user_id = u.id
        WHERE c.user_id = $1`,
@@ -25,7 +25,7 @@ export async function GET() {
     
     // 获取暗恋我的人
     const crushedBy = await query(
-      `SELECT c.*, u.name, u.email as phone 
+      `SELECT c.*, u.name, u.phone 
        FROM crushes c
        JOIN users u ON c.user_id = u.id
        WHERE c.target_user_id = $1 AND c.is_mutual = FALSE`,
@@ -35,8 +35,8 @@ export async function GET() {
     // 获取互相暗恋的匹配
     const mutualMatches = await query(
       `SELECT cm.*, 
-        u1.name as user1_name, u1.email as user1_phone,
-        u2.name as user2_name, u2.email as user2_phone
+        u1.name as user1_name, u1.phone as user1_phone,
+        u2.name as user2_name, u2.phone as user2_phone
        FROM crush_matches cm
        JOIN users u1 ON cm.user1_id = u1.id
        JOIN users u2 ON cm.user2_id = u2.id

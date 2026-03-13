@@ -19,7 +19,7 @@ export async function GET() {
       SELECT DISTINCT 
         u.id, 
         u.name, 
-        u.email as phone,
+        u.phone,  // 这里改成 phone，不用别名
         (
           SELECT content FROM messages 
           WHERE (sender_id = $1 AND receiver_id = u.id) 

@@ -24,9 +24,9 @@ export async function GET(
   // 这里假设 chatId 就是对方的用户ID（简化版）
   const otherUserId = chatId;
   
-  // 获取对方用户信息
+  // 获取对方用户信息 - 直接使用 phone 字段
   const userResult = await query(
-    'SELECT id, name, email as phone FROM users WHERE id = $1',
+    'SELECT id, name, phone FROM users WHERE id = $1',
     [otherUserId]
   );
   

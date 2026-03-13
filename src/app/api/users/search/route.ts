@@ -21,9 +21,9 @@ export async function GET(request: Request) {
   
   try {
     const result = await query(
-      `SELECT id, name, email as phone 
+      `SELECT id, name, phone 
        FROM users 
-       WHERE id != $1 AND (email ILIKE $2 OR name ILIKE $2)
+       WHERE id != $1 AND (phone ILIKE $2 OR name ILIKE $2)
        LIMIT 10`,
       [userId, `%${q}%`]
     );

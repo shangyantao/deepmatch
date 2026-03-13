@@ -14,9 +14,9 @@ export async function GET() {
   const userId = parseInt(session.user.id);
   
   try {
-    // 获取用户基本信息 - 将 email 作为 phone 返回
+    // 获取用户基本信息 - 直接使用 phone 字段
     const userResult = await query(
-      `SELECT id, email as phone, name, avatar, gender, birthday, city, bio, answers, created_at
+      `SELECT id, phone, name, avatar, gender, birthday, city, bio, answers, created_at
        FROM users WHERE id = $1`,
       [userId]
     );
@@ -86,7 +86,7 @@ export async function PUT(request: Request) {
            city = COALESCE($4, city),
            bio = COALESCE($5, bio)
        WHERE id = $6
-       RETURNING id, email as phone, name, gender, birthday, city, bio`,
+       RETURNING id, phone, name, gender, birthday, city, bio`,
       [name, gender, birthday, city, bio, userId]
     );
     

@@ -13,14 +13,14 @@ export async function GET() {
   const userId = parseInt(session.user.id);
   
   try {
-    // 获取用户的匹配历史，按日期分组
+    // 获取用户的匹配历史，按日期分组 - 使用 phone 字段
     const result = await query(
       `SELECT 
         dm.date,
         dm.similarity_score,
         u.id as matched_user_id,
         u.name as matched_user_name,
-        u.email as matched_user_phone
+        u.phone as matched_user_phone
        FROM daily_matches dm
        JOIN users u ON dm.matched_user_id = u.id
        WHERE dm.user_id = $1

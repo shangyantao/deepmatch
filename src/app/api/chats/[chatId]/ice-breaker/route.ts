@@ -22,9 +22,9 @@ export async function GET(
   const userId = parseInt(session.user.id);
   const otherUserId = chatId; // 假设 chatId 就是对方的用户ID
 
-  // 获取当前用户信息
+  // 获取当前用户信息 - 直接使用 phone 字段
   const myResult = await query(
-    'SELECT id, name, email as phone, answers FROM users WHERE id = $1',
+    'SELECT id, name, phone, answers FROM users WHERE id = $1',
     [userId]
   );
   
@@ -32,9 +32,9 @@ export async function GET(
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  // 获取对方用户信息
+  // 获取对方用户信息 - 直接使用 phone 字段
   const otherResult = await query(
-    'SELECT id, name, email as phone, answers FROM users WHERE id = $1',
+    'SELECT id, name, phone, answers FROM users WHERE id = $1',
     [otherUserId]
   );
 

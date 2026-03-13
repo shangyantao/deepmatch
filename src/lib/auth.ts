@@ -1,6 +1,6 @@
 import type { NextAuthOptions, User as NextAuthUser } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { findUserByEmail, createUser, initTable } from '@/lib/user';  // 改这里
+import { findUserByPhone, createUser, initTable } from '@/lib/user';
 
 // 初始化表
 initTable().catch(console.error);
@@ -44,17 +44,17 @@ export const authOptions: NextAuthOptions = {
           throw new Error("验证码不正确，请重试。");
         }
 
-        // 查找用户 - 用 email 参数传入 phone
-        let user = await findUserByEmail(phone);  // 改这里
+        // 查找用户 - 用 phone 查找
+        let user = await findUserByPhone(phone);
 
         // 不存在则创建
         if (!user) {
-          user = await createUser(phone);  // createUser 也要对应
+          user = await createUser(phone);
         }
 
         return {
           id: String(user.id),
-          phone: user.email,  // email 字段存的是手机号
+          phone: user.phone,  // 直接使用 phone 字段
         };
       },
     }),

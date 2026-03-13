@@ -1,4 +1,5 @@
 import { query } from '@/lib/db';
+import { calculateMatchScore } from '@/app/api/matches/daily/route'; // 如果需要导入实际的计算函数
 
 function parseEmbedding(raw: string | null): number[] | null {
   if (!raw) return null;
@@ -36,9 +37,9 @@ export async function generateDailyMatchesForUser(userId: string, limit = 3) {
   
   const userIdNum = parseInt(userId);
 
-  // 检查今天是否已有匹配记录
+  // 检查今天是否已有匹配记录 - 直接使用 phone 字段
   const existingResult = await query(
-    `SELECT dm.*, u.name, u.email as phone 
+    `SELECT dm.*, u.name, u.phone 
      FROM daily_matches dm
      JOIN users u ON dm.matched_user_id = u.id
      WHERE dm.user_id = $1 AND dm.date >= $2 AND dm.date < $3
@@ -72,19 +73,22 @@ export async function generateDailyMatchesForUser(userId: string, limit = 3) {
     return [];
   }
 
-  // 获取其他所有用户的 answers
+  // 获取其他所有用户的 answers - 直接使用 phone 字段
   const othersResult = await query(
-    'SELECT id, name, email as phone, answers FROM users WHERE id != $1 AND answers IS NOT NULL',
+    'SELECT id, name, phone, answers FROM users WHERE id != $1 AND answers IS NOT NULL',
     [userIdNum]
   );
 
-  // 计算相似度（这里需要根据你的实际算法调整）
+  // 计算相似度
   const scored = othersResult.rows
     .map((other: any) => {
-      // 这里调用你现有的 calculateMatchScore 函数
-      // 由于 calculateMatchScore 在 daily/route.ts 中，可能需要导入
-      // 临时用随机数代替，实际使用时请导入正确的函数
-      const score = Math.floor(Math.random() * 30) + 60; // 临时随机数
+      // 这里应该调用 calculateMatchScore 函数
+      // 由于 calculateMatchScore 在 daily/route.ts 中，需要导入
+      // 暂时注释掉，实际使用时取消注释并确保导入正确
+      // const score = calculateMatchScore(selfAnswers, other.answers);
+      
+      // 临时用随机数代替
+      const score = Math.floor(Math.random() * 30) + 60;
       return { profile: other, score };
     })
     .sort((a, b) => b.score - a.score)

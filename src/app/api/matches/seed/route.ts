@@ -3,9 +3,9 @@ import { query } from '@/lib/db';
 
 export async function GET() {
   try {
-    // 创建测试用户1
+    // 创建测试用户 - 使用 phone 字段
     await query(`
-      INSERT INTO users (email, name, answers) VALUES 
+      INSERT INTO users (phone, name, answers) VALUES 
       ('13800000001', '测试用户1', '{
         "1": ["家庭", "健康", "自由"],
         "2": "家庭幸福",
@@ -42,11 +42,11 @@ export async function GET() {
         "9": "买房结婚",
         "10": 1
       }')
-      ON CONFLICT (email) DO NOTHING
+      ON CONFLICT (phone) DO NOTHING
     `);
     
-    // 验证是否创建成功
-    const result = await query(`SELECT email, name FROM users WHERE email LIKE '138000000%'`);
+    // 验证是否创建成功 - 使用 phone 字段
+    const result = await query(`SELECT phone, name FROM users WHERE phone LIKE '138000000%'`);
     
     return NextResponse.json({ 
       success: true, 
