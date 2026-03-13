@@ -5,7 +5,7 @@ import { query } from '@/lib/db';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }  // 改成 Promise
 ) {
   const session = await getServerSession(authOptions);
   
@@ -14,7 +14,9 @@ export async function GET(
   }
   
   try {
-    const userId = parseInt(params.id);
+    // 需要 await params
+    const { id } = await params;
+    const userId = parseInt(id);
     
     const result = await query(
       'SELECT id, name, email as phone FROM users WHERE id = $1',

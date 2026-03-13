@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google"; 
 import "./globals.css";
 import { Providers } from './providers';
 import NavBar from '@/components/NavBar';
 import { ToastProvider } from '@/components/Toast';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: "DeepMatch · 深度价值观配对",
@@ -20,10 +17,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body className={inter.className}>
+      <body className="font-sans antialiased">
         <ErrorBoundary>
           <Providers>
-            <ToastProvider>  {/* ToastProvider 必须在所有使用 useToast 的组件外面 */}
+            <ToastProvider>
               <div className="pb-20 min-h-screen">
                 {children}
               </div>

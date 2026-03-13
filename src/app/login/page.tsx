@@ -1,13 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 const FIXED_OTP_HINT = process.env.NEXT_PUBLIC_FIXED_OTP_HINT ?? "000000";
 
-export default function LoginPage() {
+// 将主要逻辑提取到内部组件
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/";
@@ -115,3 +116,15 @@ export default function LoginPage() {
   );
 }
 
+// 主页面组件用 Suspense 包裹
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+        <div className="text-slate-400">加载中...</div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
+  );
+}
