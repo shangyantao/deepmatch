@@ -1,5 +1,5 @@
 import { query } from '@/lib/db';
-import { calculateMatchScore } from '@/app/api/matches/daily/route'; // 如果需要导入实际的计算函数
+// import { calculateMatchScore } from '@/app/api/matches/daily/route'; // 暂时注释掉
 
 function parseEmbedding(raw: string | null): number[] | null {
   if (!raw) return null;
@@ -79,16 +79,13 @@ export async function generateDailyMatchesForUser(userId: string, limit = 3) {
     [userIdNum]
   );
 
-  // 计算相似度
+  // 计算相似度（先用随机数，后续可以导入实际函数）
   const scored = othersResult.rows
     .map((other: any) => {
-      // 这里应该调用 calculateMatchScore 函数
-      // 由于 calculateMatchScore 在 daily/route.ts 中，需要导入
-      // 暂时注释掉，实际使用时取消注释并确保导入正确
-      // const score = calculateMatchScore(selfAnswers, other.answers);
-      
-      // 临时用随机数代替
-      const score = Math.floor(Math.random() * 30) + 60;
+      // 这里调用你现有的 calculateMatchScore 函数
+      // 由于 calculateMatchScore 在 daily/route.ts 中，可能需要导入
+      // 临时用随机数代替，实际使用时请导入正确的函数
+      const score = Math.floor(Math.random() * 30) + 60; // 临时随机数
       return { profile: other, score };
     })
     .sort((a, b) => b.score - a.score)
