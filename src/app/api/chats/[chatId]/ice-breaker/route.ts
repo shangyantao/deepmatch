@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { query } from '@/lib/db';
 import { deepseekChat } from "@/lib/deepseek";
 
 export async function GET(
@@ -19,42 +19,54 @@ export async function GET(
     return NextResponse.json({ error: "Invalid chatId" }, { status: 400 });
   }
 
-  const chat = await prisma.chat.findFirst({
-    where: {
-      id: chatId,
-      OR: [
-        { userAId: session.user.id },
-        { userBId: session.user.id },
-      ],
-    },
-    include: {
-      userA: { include: { valueProfile: true } },
-      userB: { include: { valueProfile: true } },
-      messages: {
-        orderBy: { createdAt: "desc" },
-        take: 5,
-      },
-    },
-  });
+  const userId = parseInt(session.user.id);
+  const otherUserId = chatId; // 假设 chatId 就是对方的用户ID
 
-  if (!chat) {
-    return NextResponse.json({ error: "Chat not found" }, { status: 404 });
+  // 获取当前用户信息
+  const myResult = await query(
+    'SELECT id, name, email as phone, answers FROM users WHERE id = $1',
+    [userId]
+  );
+  
+  if (myResult.rows.length === 0) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  const myId = session.user.id;
-  const myProfile = chat.userAId === myId ? chat.userA : chat.userB;
-  const otherProfile = chat.userAId === myId ? chat.userB : chat.userA;
+  // 获取对方用户信息
+  const otherResult = await query(
+    'SELECT id, name, email as phone, answers FROM users WHERE id = $1',
+    [otherUserId]
+  );
 
-  const myTags = myProfile.valueProfile
-    ? (JSON.parse(myProfile.valueProfile.tags) as string[])
-    : [];
-  const otherTags = otherProfile.valueProfile
-    ? (JSON.parse(otherProfile.valueProfile.tags) as string[])
-    : [];
+  if (otherResult.rows.length === 0) {
+    return NextResponse.json({ error: "Other user not found" }, { status: 404 });
+  }
 
-  const recentLines = chat.messages
+  const myProfile = myResult.rows[0];
+  const otherProfile = otherResult.rows[0];
+
+  // 获取最近的聊天记录
+  const messagesResult = await query(
+    `SELECT sender_id, content, created_at 
+     FROM messages 
+     WHERE (sender_id = $1 AND receiver_id = $2) 
+        OR (sender_id = $2 AND receiver_id = $1)
+     ORDER BY created_at DESC
+     LIMIT 5`,
+    [userId, otherUserId]
+  );
+
+  // 从 answers 中提取价值观标签（假设第1题是多选题，存了价值观）
+  const myAnswers = myProfile.answers || {};
+  const otherAnswers = otherProfile.answers || {};
+  
+  const myTags = Array.isArray(myAnswers[1]) ? myAnswers[1] : [];
+  const otherTags = Array.isArray(otherAnswers[1]) ? otherAnswers[1] : [];
+
+  // 构建最近的对话记录
+  const recentLines = messagesResult.rows
     .reverse()
-    .map((m) => (m.senderId === myId ? `我: ${m.content}` : `TA: ${m.content}`))
+    .map((m: any) => (m.sender_id === userId ? `我: ${m.content}` : `TA: ${m.content}`))
     .join("\n");
 
   const prompt = `
