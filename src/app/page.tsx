@@ -8,11 +8,18 @@ import { useEffect, useState } from 'react';
 export default function HomePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [hasCompletedTest, setHasCompletedTest] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
   // 检查用户是否已完成测试
   useEffect(() => {
+    if (!mounted) return;
+    
     if (session?.user?.id) {
       fetch('/api/user/test-status')
         .then(res => res.json())
@@ -24,10 +31,12 @@ export default function HomePage() {
     } else {
       setLoading(false);
     }
-  }, [session]);
+  }, [session, mounted]);
   
   // 根据状态自动跳转
   useEffect(() => {
+    if (!mounted) return;
+    
     if (status === 'authenticated' && !loading) {
       if (hasCompletedTest === false) {
         router.push('/onboarding');
@@ -35,13 +44,27 @@ export default function HomePage() {
         router.push('/discover');
       }
     }
-  }, [status, hasCompletedTest, loading, router]);
+  }, [status, hasCompletedTest, loading, router, mounted]);
+  
+  // 服务端渲染时显示简单内容
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+        <div className="max-w-md mx-auto px-4 py-12">
+          <div className="text-center">加载中...</div>
+        </div>
+      </div>
+    );
+  }
   
   // 加载中
   if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-50 to-white">
-        <div className="text-center">加载中...</div>
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-purple-600 border-t-transparent"></div>
+          <p className="mt-2 text-gray-600">加载中...</p>
+        </div>
       </div>
     );
   }
